@@ -1,36 +1,77 @@
 import * as THREE from "three";
 import { useMemo, useRef } from "react";
 
-import { OrbitControls } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, shaderMaterial } from "@react-three/drei";
+import {
+  Canvas,
+  extend,
+  type Object3DNode,
+  useFrame,
+} from "@react-three/fiber";
+import { useControls } from "leva";
 
 import sphereFrag from "@shaders/sphere.frag";
 import sphereVert from "@shaders/sphere.vert";
 
+type SphereUniforms = {
+  uDistortionFrequency: number;
+  uDistortionStrength: number;
+  uDisplacementFrequency: number;
+  uDisplacementStrength: number;
+  uTimeScale: number;
+  uTime: number;
+};
+
+const SphereShader = shaderMaterial(
+  {
+    uDistortionFrequency: 2,
+    uDistortionStrength: 1,
+    uDisplacementFrequency: 2,
+    uDisplacementStrength: 0.2,
+    uTimeScale: 0.1,
+    uTime: 0,
+  } as SphereUniforms,
+  sphereFrag,
+  sphereVert,
+);
+
+extend({ SphereShader });
+
+declare module "@react-three/fiber" {
+  interface ThreeElements {
+    sphereShader: Object3DNode<THREE.ShaderMaterial & SphereUniforms, any>;
+  }
+}
+
 const Sphere = ({ position }: { position: [number, number, number] }) => {
   const ref = useRef() as React.MutableRefObject<THREE.Mesh>;
+  const shaderRef = useRef() as React.MutableRefObject<
+    THREE.ShaderMaterial & SphereUniforms
+  >;
 
-  const uniforms = useMemo(
-    () => ({
-      uTime: { value: 0 },
-    }),
-    [],
-  );
+  const controls = useControls("Sphere", {
+    uDistortionFrequency: { value: 2, min: 0, max: 10, step: 0.001 },
+    uDistortionStrength: { value: 1, min: 0, max: 10, step: 0.001 },
+    uDisplacementFrequency: { value: 2, min: 0, max: 10, step: 0.001 },
+    uDisplacementStrength: { value: 0.2, min: 0, max: 10, step: 0.001 },
+    uTimeScale: { value: 0.1, min: 0, max: 10, step: 0.001 },
+  } as {
+    [key in keyof SphereUniforms]: { value: SphereUniforms[key] } & any;
+  });
 
-  useFrame((state) => {
-    const { clock } = state;
-    (ref.current.material as THREE.ShaderMaterial).uniforms.uTime.value =
-      clock.getElapsedTime();
+  useFrame(({ clock }) => {
+    shaderRef.current.uTime = clock.getElapsedTime();
   });
 
   return (
     <mesh ref={ref} position={position}>
       <sphereGeometry args={[1, 512, 512]} />
-      <shaderMaterial
+      <sphereShader
+        key={SphereShader.key}
+        ref={shaderRef}
         fragmentShader={sphereFrag}
         vertexShader={sphereVert}
-        uniforms={uniforms}
-        // side={THREE.BackSide}
+        {...controls}
       />
     </mesh>
   );

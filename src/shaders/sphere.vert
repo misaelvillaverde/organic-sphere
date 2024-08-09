@@ -2,21 +2,20 @@
 #pragma glslify: perlin4d = require('./partials/perlin4d');
 
 uniform float uTime;
+uniform float uDistortionFrequency;
+uniform float uDistortionStrength;
+uniform float uDisplacementFrequency;
+uniform float uDisplacementStrength;
+uniform float uTimeScale;
 
 varying vec3 vNormal;
 varying float vPerlinStrength;
 
 void main() {
-        float uDistortionFrequency = 2.;
-        float uDistortionStrength = 1.;
-
-        float uDisplacementFrequency = 2.;
-        float uDisplacementStrength = .2;
-
         vec3 displacementPosition = position;
-        displacementPosition += perlin4d(vec4(displacementPosition * uDistortionFrequency, uTime * 0.12)) * uDistortionStrength;
+        displacementPosition += perlin4d(vec4(displacementPosition * uDistortionFrequency, uTime * uTimeScale)) * uDistortionStrength;
 
-        float perlinStrength = perlin4d(vec4(displacementPosition * uDisplacementFrequency, uTime * 0.1)) * uDisplacementStrength;
+        float perlinStrength = perlin4d(vec4(displacementPosition * uDisplacementFrequency, uTime * uTimeScale)) * uDisplacementStrength;
 
         vec3 newPosition = position;
 

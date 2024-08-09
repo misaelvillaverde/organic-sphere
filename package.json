@@ -31,5 +31,8 @@
     "typescript": "^5.2.2",
     "vite": "^5.3.4",
     "vite-plugin-glslify-inject": "^1.1.2"
+  },
+  "overrides": {
+    "@radix-ui/react-portal": "1.0.2"
   }
 }

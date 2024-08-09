@@ -2,7 +2,12 @@ declare module '@shaders/sphere.vert' {
     const sphere: string;
 
     type Uniforms = {
-        uTime: number
+        uTime: number,
+        uDistortionFrequency: number,
+        uDistortionStrength: number,
+        uDisplacementFrequency: number,
+        uDisplacementStrength: number,
+        uTimeScale: number
     };
 
     export {
