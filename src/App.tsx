@@ -41,8 +41,8 @@ const defaultUniforms = {
   uTimeScale: 0.6,
   uTime: 0,
   uLightAPosition: new THREE.Vector3(1.0, 1.0, 0.0),
-  uLightAColor: new THREE.Color("#63dde2"),
-  uLightAIntensity: 1.0,
+  uLightAColor: new THREE.Color("#a364e3"),
+  uLightAIntensity: 3.0,
   uLightBPosition: new THREE.Vector3(-1.0, -1.0, 0.0),
   uLightBColor: new THREE.Color("#3490c7"),
   uLightBIntensity: 1.5,
@@ -121,7 +121,7 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
     }),
     lightA: folder({
       uLightAColor: {
-        value: defaultUniforms.uLightAColor.getHexString(),
+        value: "#" + defaultUniforms.uLightAColor.getHexString(),
         label: "color",
       },
       uLightAIntensity: {
@@ -153,7 +153,7 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
     }),
     lightB: folder({
       uLightBColor: {
-        value: defaultUniforms.uLightBColor.getHexString(),
+        value: "#" + defaultUniforms.uLightBColor.getHexString(),
         label: "color",
       },
       uLightBIntensity: {

@@ -71,6 +71,7 @@ void main() {
     vec3 color = vec3(0.);
     color = mix(color, uLightAColor, lightAIntensity * fresnel);
     color = mix(color, uLightBColor, lightBIntensity * fresnel);
+    color = mix(color, vec3(1.), clamp(pow(fresnel - 0.4, 3.), 0., 1.));
 
     // varying
     vNormal = normal;
