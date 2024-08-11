@@ -27,26 +27,32 @@ type SphereUniforms = {
   uLightBPosition: THREE.Vector3;
   uLightBColor: THREE.Color;
   uLightBIntensity: number;
+  uSubdivisions: number;
+  uFresnelOffset: number;
+  uFresnelMultiplier: number;
+  uFresnelPower: number;
 };
 
-const SphereShader = shaderMaterial(
-  {
-    uDistortionFrequency: 2,
-    uDistortionStrength: 1,
-    uDisplacementFrequency: 2,
-    uDisplacementStrength: 0.2,
-    uTimeScale: 0.1,
-    uTime: 0,
-    uLightAPosition: new THREE.Vector3(1.0, 1.0, 0.0),
-    uLightAColor: new THREE.Color("#ef9d9d"),
-    uLightAIntensity: 1.0,
-    uLightBPosition: new THREE.Vector3(-1.0, -1.0, 0.0),
-    uLightBColor: new THREE.Color("#4bdebd"),
-    uLightBIntensity: 1.0,
-  } as SphereUniforms,
-  sphereFrag,
-  sphereVert,
-);
+const defaultUniforms = {
+  uDistortionFrequency: 0.72,
+  uDistortionStrength: 2.4,
+  uDisplacementFrequency: 1.2,
+  uDisplacementStrength: 0.23,
+  uTimeScale: 0.6,
+  uTime: 0,
+  uLightAPosition: new THREE.Vector3(1.0, 1.0, 0.0),
+  uLightAColor: new THREE.Color("#63dde2"),
+  uLightAIntensity: 1.0,
+  uLightBPosition: new THREE.Vector3(-1.0, -1.0, 0.0),
+  uLightBColor: new THREE.Color("#3490c7"),
+  uLightBIntensity: 1.5,
+  uSubdivisions: 512,
+  uFresnelOffset: 0.35,
+  uFresnelMultiplier: 0.71,
+  uFresnelPower: 10,
+} as SphereUniforms;
+
+const SphereShader = shaderMaterial(defaultUniforms, sphereFrag, sphereVert);
 
 extend({ SphereShader });
 
@@ -69,17 +75,28 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
   });
 
   const controls = useControls({
-    uTimeScale: { value: 0.1, min: 0, max: 10, step: 0.001 },
+    uTimeScale: {
+      value: defaultUniforms.uTimeScale,
+      min: 0,
+      max: 10,
+      step: 0.001,
+    },
+    uSubdivisions: {
+      value: defaultUniforms.uSubdivisions,
+      min: 0,
+      max: 512,
+      step: 1,
+    },
     Distortion: folder({
       uDistortionFrequency: {
-        value: 2,
+        value: defaultUniforms.uDistortionFrequency,
         min: 0,
         max: 10,
         step: 0.001,
         label: "ω",
       },
       uDistortionStrength: {
-        value: 1,
+        value: defaultUniforms.uDistortionStrength,
         min: 0,
         max: 10,
         step: 0.001,
@@ -88,14 +105,14 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
     }),
     Displacement: folder({
       uDisplacementFrequency: {
-        value: 2,
+        value: defaultUniforms.uDisplacementFrequency,
         min: 0,
         max: 10,
         step: 0.001,
         label: "ω",
       },
       uDisplacementStrength: {
-        value: 0.2,
+        value: defaultUniforms.uDisplacementStrength,
         min: 0,
         max: 1,
         step: 0.001,
@@ -103,10 +120,16 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
       },
     }),
     lightA: folder({
-      uLightAColor: { value: "#ef9d9d", label: "color" },
-      uLightAIntensity: { value: 1.0, label: "intensity" },
+      uLightAColor: {
+        value: defaultUniforms.uLightAColor.getHexString(),
+        label: "color",
+      },
+      uLightAIntensity: {
+        value: defaultUniforms.uLightAIntensity,
+        label: "intensity",
+      },
       lightAPhi: {
-        value: Math.PI / 2,
+        value: 1.57,
         min: 0,
         max: Math.PI,
         step: 0.001,
@@ -117,7 +140,7 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
         },
       },
       lightATheta: {
-        value: Math.PI / 2,
+        value: 0,
         min: 0,
         max: Math.PI,
         step: 0.001,
@@ -129,10 +152,16 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
       },
     }),
     lightB: folder({
-      uLightBColor: { value: "#4bdebd", label: "color" },
-      uLightBIntensity: { value: 1.0, label: "intensity" },
+      uLightBColor: {
+        value: defaultUniforms.uLightBColor.getHexString(),
+        label: "color",
+      },
+      uLightBIntensity: {
+        value: defaultUniforms.uLightBIntensity,
+        label: "intensity",
+      },
       lightBPhi: {
-        value: 0,
+        value: 2.68,
         min: 0,
         max: Math.PI,
         step: 0.001,
@@ -143,7 +172,7 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
         },
       },
       lightBTheta: {
-        value: 0,
+        value: 2.13,
         min: 0,
         max: Math.PI,
         step: 0.001,
@@ -152,6 +181,29 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
           lights.current.b.theta = v;
           shaderRef.current.uLightBPosition.setFromSpherical(lights.current.b);
         },
+      },
+    }),
+    fresnel: folder({
+      uFresnelOffset: {
+        value: defaultUniforms.uFresnelOffset,
+        min: -1,
+        max: 5,
+        step: 0.001,
+        label: "offset",
+      },
+      uFresnelMultiplier: {
+        value: defaultUniforms.uFresnelMultiplier,
+        min: 0,
+        max: 10,
+        step: 0.001,
+        label: "multiplier",
+      },
+      uFresnelPower: {
+        value: defaultUniforms.uFresnelPower,
+        min: 0,
+        max: 10,
+        step: 0.001,
+        label: "power",
       },
     }),
   } as const);
