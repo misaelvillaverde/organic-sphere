@@ -9,7 +9,7 @@ import {
   type Object3DNode,
   useFrame,
 } from "@react-three/fiber";
-import { folder, useControls } from "leva";
+import { folder, Leva, useControls } from "leva";
 
 import sphereFrag from "@shaders/sphere.frag";
 import sphereVert from "@shaders/sphere.vert";
@@ -255,6 +255,8 @@ const Sphere = ({ position }: { position: [number, number, number] }) => {
   );
 };
 
+const debug = window.location.pathname.includes("debug");
+
 function App() {
   return (
     <div className="h-full">
@@ -278,7 +280,8 @@ function App() {
         <Sphere position={[0, 0, 0]} />
         <OrbitControls />
       </Canvas>
-      <Stats />
+      {debug && <Stats />}
+      <Leva hidden={!debug} />
     </div>
   );
 }

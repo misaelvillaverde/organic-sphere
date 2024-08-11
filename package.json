@@ -30,7 +30,8 @@
     "eslint-plugin-react-refresh": "^0.4.7",
     "typescript": "^5.2.2",
     "vite": "^5.3.4",
-    "vite-plugin-glslify-inject": "^1.1.2"
+    "vite-plugin-glslify-inject": "^1.1.2",
+    "wrangler": "^3.70.0"
   },
   "overrides": {
     "@radix-ui/react-portal": "1.0.2"
